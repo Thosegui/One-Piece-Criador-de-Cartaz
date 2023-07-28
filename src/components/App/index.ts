@@ -1,16 +1,13 @@
-import store, { addListener, removeListener, update } from '../../store'
+import store, { addListener, removeListener } from '../../store'
 import EditPanel from '../EditPanel'
 import type TipsDialog from '../TipsDialog'
 import type WantedButton from '../WantedButton'
 import WantedPoster, { WantedPosterAttribute } from '../WantedPoster'
-import { WARCRIMINAL_POSTER } from './config'
 import LaunchHandler from './launch-handler'
 import cssContent from './style.css?inline'
 import templateContent from './template.html?raw'
 
 const TAG_NAME = 'app-container'
-
-const WARCRIMINAL_HASH = '#warcriminal'
 
 const template = document.createElement('template')
 template.innerHTML = templateContent
@@ -23,14 +20,10 @@ class App extends HTMLElement {
   #editButton: WantedButton
   #importButton: WantedButton
   #exportButton: WantedButton
-  #criminalButton: HTMLButtonElement
   #tipsButton: HTMLButtonElement
-
-  #carouselIntervalId: number = 0
 
   #startTime: number = 0
   #root: ShadowRoot
-  #hashChangeListener: (event: HashChangeEvent) => void
   #storeListener: Parameters<typeof addListener>[1]
 
   constructor() {
@@ -66,12 +59,8 @@ class App extends HTMLElement {
       this.#root.querySelector<WantedButton>('#importButton')!
     this.#exportButton =
       this.#root.querySelector<WantedButton>('#exportButton')!
-    this.#criminalButton =
-      this.#root.querySelector<HTMLButtonElement>('#criminalButton')!
     this.#tipsButton =
       this.#root.querySelector<HTMLButtonElement>('#tipsButton')!
-
-    this.#hashChangeListener = this.#onHashtagChange.bind(this)
 
     this.#storeListener = (key, value) => {
       switch (key) {
@@ -95,7 +84,6 @@ class App extends HTMLElement {
           this.#setWantedPosterAttributes({ [key]: value.toString() })
       }
     }
-    window.addEventListener('hashchange', this.#hashChangeListener)
   }
 
   #removeLoading() {
@@ -114,65 +102,7 @@ class App extends HTMLElement {
       loadingOverlay.style.opacity = '0'
 
       setTimeout(() => loadingOverlay.remove(), 1000)
-
-      if (location.hash === WARCRIMINAL_HASH) {
-        this.#criminalButton.classList.add('criminal--visible')
-        return
-      }
-
-      setTimeout(
-        () => this.#criminalButton.classList.add('criminal--visible'),
-        10000
-      )
     }, 200)
-  }
-
-  #onHashtagChange() {
-    this.#toggleWarCriminalMode(location.hash === WARCRIMINAL_HASH)
-  }
-
-  #toggleWarCriminalMode(toggle: boolean) {
-    const overlay = this.#root.querySelector<HTMLElement>('.blood-overlay')
-    if (!overlay) {
-      return
-    }
-
-    const githubLink = toggle
-      ? 'https://github.com/vshymanskyy/StandWithUkraine/blob/main/docs/README.md'
-      : 'https://github.com/YuskaWu/one-piece-wanted-poster'
-    const githubCorner = document.querySelector<HTMLElement>('github-corner')!
-    githubCorner.classList.toggle('gc-ua', toggle)
-    githubCorner.setAttribute('href', githubLink)
-
-    this.classList.toggle('warcriminal')
-    overlay.classList.toggle('blood-overlay--visible')
-    this.#criminalButton.classList.toggle('criminal--stamp')
-    this.#tipsButton.classList.toggle('tips-button--hidden')
-    this.#root
-      .querySelector<HTMLDivElement>('.button-container')
-      ?.classList.toggle('button-container--hidden')
-
-    if (toggle) {
-      update({ ...WARCRIMINAL_POSTER })
-    }
-
-    this.#toggleWarCriminalCarousel(toggle)
-  }
-
-  #toggleWarCriminalCarousel(toggle: boolean) {
-    if (!toggle) {
-      clearInterval(this.#carouselIntervalId)
-      return
-    }
-
-    const length = WARCRIMINAL_POSTER.photoUrls.length
-    let index = Math.floor(length * Math.random())
-
-    update({ photoUrl: WARCRIMINAL_POSTER.photoUrls[index] })
-    this.#carouselIntervalId = window.setInterval(() => {
-      index = (index + 1) % length
-      update({ photoUrl: WARCRIMINAL_POSTER.photoUrls[index] })
-    }, 5000)
   }
 
   #setWantedPosterAttributes(attributes: WantedPosterAttribute) {
@@ -200,10 +130,6 @@ class App extends HTMLElement {
     addListener('bountySpacing', this.#storeListener)
     addListener('shadow', this.#storeListener)
     addListener('filter', this.#storeListener)
-
-    if (location.hash === WARCRIMINAL_HASH) {
-      this.#toggleWarCriminalMode(true)
-    }
 
     this.addEventListener('dragover', (event) => {
       // prevent default to allow drop
@@ -280,11 +206,6 @@ class App extends HTMLElement {
       }
     })
 
-    this.#criminalButton.addEventListener('click', () => {
-      const isEnabled = location.hash === WARCRIMINAL_HASH
-      location.hash = isEnabled ? '' : WARCRIMINAL_HASH
-    })
-
     this.#tipsButton.addEventListener('click', () => {
       this.#tipsDialog.toggle()
     })
@@ -302,7 +223,6 @@ class App extends HTMLElement {
   }
 
   disconnectedCallback() {
-    window.removeEventListener('hashchange', this.#hashChangeListener)
     removeListener('photoUrl', this.#storeListener)
     removeListener('name', this.#storeListener)
     removeListener('bounty', this.#storeListener)

@@ -1,4 +1,3 @@
-import { WARCRIMINAL_POSTER } from '../App/config'
 import { ONE_PIECE_WANTED_IMAGE } from './constants'
 import cssContent from './style.css?inline'
 import { getScale } from './utils'
@@ -177,11 +176,6 @@ class WantedPoster extends HTMLElement {
 
       case 'photo-url': {
         await this.#photo.loadImage(newValue)
-        this.#photoResizer.highlight = WARCRIMINAL_POSTER.photoUrls.includes(
-          newValue
-        )
-          ? false
-          : true
         break
       }
 
