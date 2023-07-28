@@ -20,6 +20,7 @@ class App extends HTMLElement {
   #editButton: WantedButton
   #importButton: WantedButton
   #exportButton: WantedButton
+  #posterButton: WantedButton
   #tipsButton: HTMLButtonElement
 
   #startTime: number = 0
@@ -59,6 +60,8 @@ class App extends HTMLElement {
       this.#root.querySelector<WantedButton>('#importButton')!
     this.#exportButton =
       this.#root.querySelector<WantedButton>('#exportButton')!
+    this.#posterButton =
+      this.#root.querySelector<WantedButton>('#posterButton')!
     this.#tipsButton =
       this.#root.querySelector<HTMLButtonElement>('#tipsButton')!
 
@@ -204,6 +207,10 @@ class App extends HTMLElement {
       } finally {
         this.#exportButton.loading = false
       }
+    })
+
+    this.#posterButton.addEventListener('click', () => {
+      this.#wantedPoster.changePoster()
     })
 
     this.#tipsButton.addEventListener('click', () => {

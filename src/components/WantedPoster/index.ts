@@ -1,4 +1,7 @@
-import { ONE_PIECE_WANTED_IMAGE } from './constants'
+import {
+  ONE_PIECE_WANTED_IMAGE,
+  ONE_PIECE_WANTED_IMAGE_SANJI
+} from './constants'
 import cssContent from './style.css?inline'
 import { getScale } from './utils'
 
@@ -37,6 +40,8 @@ class WantedPoster extends HTMLElement {
   #bounty: Bounty
   #wantedImage: WantedImage
   #status: 'init' | 'loading' | 'success' | 'error'
+
+  #wantedPosterSanji = false
 
   #resizeObserver: ResizeObserver
   #resizeTimeout?: number
@@ -205,6 +210,22 @@ class WantedPoster extends HTMLElement {
     return shadow
   }
 
+  changePoster() {
+    if (!this.#wantedPosterSanji) {
+      this.#wantedImage = new WantedImage(
+        this.#ctx,
+        ONE_PIECE_WANTED_IMAGE_SANJI
+      )
+      this.#wantedPosterSanji = true
+    } else {
+      this.#wantedImage = new WantedImage(this.#ctx, ONE_PIECE_WANTED_IMAGE)
+      this.#wantedPosterSanji = false
+    }
+
+    this.#wantedImage.loadImage()
+    this.#render()
+  }
+
   async export() {
     const canvas = document.createElement('canvas') as PosterCanvasElement
     canvas.domWidth = 0
@@ -214,7 +235,13 @@ class WantedPoster extends HTMLElement {
     const ctx = canvas.getContext('2d') as PosterRenderingContext2D
 
     const shadow = this.#getShadow()
-    const wantedImage = new WantedImage(ctx, ONE_PIECE_WANTED_IMAGE)
+    let wantedImage
+    if (!this.#wantedPosterSanji) {
+      wantedImage = new WantedImage(ctx, ONE_PIECE_WANTED_IMAGE)
+    } else {
+      wantedImage = new WantedImage(ctx, ONE_PIECE_WANTED_IMAGE_SANJI)
+    }
+
     const photo = new Photo(ctx)
     const name = new Name(ctx)
     const bounty = new Bounty(ctx)
