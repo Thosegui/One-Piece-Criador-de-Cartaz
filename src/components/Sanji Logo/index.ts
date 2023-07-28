@@ -1,12 +1,12 @@
 import cssContent from './style.css?inline'
 import templateContent from './template.html?raw'
 
-const TAG_NAME = 'luffy-logo'
+const TAG_NAME = 'sanji-logo'
 
 const template = document.createElement('template')
 template.innerHTML = templateContent
 
-class LuffyLogo extends HTMLElement {
+class SanjiLogo extends HTMLElement {
   constructor() {
     super()
 
@@ -18,6 +18,6 @@ class LuffyLogo extends HTMLElement {
   }
 }
 
-customElements.define(TAG_NAME, LuffyLogo)
+customElements.define(TAG_NAME, SanjiLogo)
 
-export default LuffyLogo
+export default SanjiLogo
