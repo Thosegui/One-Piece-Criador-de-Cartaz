@@ -1,6 +1,7 @@
 import {
   ONE_PIECE_WANTED_IMAGE,
-  ONE_PIECE_WANTED_IMAGE_SANJI
+  ONE_PIECE_WANTED_IMAGE_ONLY_ALIVE,
+  ONE_PIECE_WANTED_IMAGE_ONLY_DEAD
 } from './constants'
 import cssContent from './style.css?inline'
 import { getScale } from './utils'
@@ -41,7 +42,7 @@ class WantedPoster extends HTMLElement {
   #wantedImage: WantedImage
   #status: 'init' | 'loading' | 'success' | 'error'
 
-  #wantedPosterSanji = false
+  #currentWantedPoster = 0
 
   #resizeObserver: ResizeObserver
   #resizeTimeout?: number
@@ -211,19 +212,27 @@ class WantedPoster extends HTMLElement {
   }
 
   changePoster() {
-    if (!this.#wantedPosterSanji) {
-      this.#wantedImage = new WantedImage(
-        this.#ctx,
-        ONE_PIECE_WANTED_IMAGE_SANJI
-      )
-      this.#wantedPosterSanji = true
-    } else {
-      this.#wantedImage = new WantedImage(this.#ctx, ONE_PIECE_WANTED_IMAGE)
-      this.#wantedPosterSanji = false
-    }
-
+    this.#wantedImage = new WantedImage(this.#ctx, this.chooseWantedImage(true))
     this.#wantedImage.loadImage()
     this.#render()
+  }
+
+  private chooseWantedImage(increaseCounter: boolean) {
+    if (increaseCounter) {
+      this.#currentWantedPoster = ++this.#currentWantedPoster % 3
+      console.log(this.#currentWantedPoster)
+    }
+    switch (this.#currentWantedPoster) {
+      case 0:
+        return ONE_PIECE_WANTED_IMAGE
+
+      case 1:
+        return ONE_PIECE_WANTED_IMAGE_ONLY_ALIVE
+
+      case 2:
+        return ONE_PIECE_WANTED_IMAGE_ONLY_DEAD
+    }
+    return ONE_PIECE_WANTED_IMAGE
   }
 
   async export() {
@@ -235,12 +244,7 @@ class WantedPoster extends HTMLElement {
     const ctx = canvas.getContext('2d') as PosterRenderingContext2D
 
     const shadow = this.#getShadow()
-    let wantedImage
-    if (!this.#wantedPosterSanji) {
-      wantedImage = new WantedImage(ctx, ONE_PIECE_WANTED_IMAGE)
-    } else {
-      wantedImage = new WantedImage(ctx, ONE_PIECE_WANTED_IMAGE_SANJI)
-    }
+    const wantedImage = new WantedImage(ctx, this.chooseWantedImage(false))
 
     const photo = new Photo(ctx)
     const name = new Name(ctx)
